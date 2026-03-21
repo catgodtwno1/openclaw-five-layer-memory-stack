@@ -2,15 +2,15 @@
 
 > Status: ✅ Self-test passed. Public repo sanitized.
 
-## Five Layers (by trigger order)
+## Layer Map
 
-| # | Layer | Trigger | What |
-|---|--------|----------|------|
-| 1 | QMD | Query time | Hybrid search (BM25 + vector + reranking |
-| 2 | LanceDB Pro | Session end | Auto-capture dialogue memory |
-| 3 | Cognee Sidecar | Startup + recall | External sync/inject |
-| 4 | lossless-claw | Context full | DAG compaction |
-| 5 | MemOS | Cross-session | Shared memory lifecycle |
+| 編號 | 元件 | 說明 |
+|------|------|------|
+| L1 | lossless-claw | DAG compaction — context window 滿時觸發 |
+| L2 | LanceDB Pro | 對話記憶自動捕捉 |
+| L2+ | MemOS | 跨會話記憶生命週期管理 |
+| L3 | QMD | 查詢時混合檢索 (BM25 + vector + reranking) |
+| L4 | Cognee Sidecar | 啟動時外部記憶同步注入 |
 
 ## Quick Start
 
@@ -19,11 +19,11 @@
 bash scripts/install-all.sh
 
 # Or install individually
-bash scripts/install-qmd.sh
-bash scripts/install-lancedb-pro.sh
-bash scripts/make-cognee-sidecar.sh
-bash scripts/install-lossless-claw.sh
-bash scripts/install-memos.sh
+bash scripts/install-lossless-claw.sh   # L1
+bash scripts/install-lancedb-pro.sh    # L2
+bash scripts/install-memos.sh          # L2+
+bash scripts/install-qmd.sh            # L3
+bash scripts/make-cognee-sidecar.sh    # L4
 
 # Validate
 bash scripts/validate-stack.sh
