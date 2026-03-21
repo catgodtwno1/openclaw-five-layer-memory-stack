@@ -3,27 +3,32 @@
 ## Five-layer model
 
 ```text
-L1 QMD
-  -> retrieves memory files / docs / selected markdown knowledge
+L0 OpenClaw native Markdown
+  -> memory/*.md, MEMORY.md, SOUL.md, AGENTS.md — persistent source of truth
 
-L2 LanceDB Pro
-  -> stores structured conversation memory extracted from interactions
-
-L3 Cognee Sidecar
-  -> external recall + synchronization path, without occupying memory slot
-
-L4 lossless-claw
+L1 lossless-claw (contextEngine slot)
   -> compacts long chat history into DAG summaries, persisted in SQLite
 
-L5 MemOS
-  -> external lifecycle/shared memory service for broader reuse
+L2 LanceDB Pro (memory slot)
+  -> stores structured conversation memory extracted from interactions
+  -> hybrid retrieval: vector + BM25 + Cross-Encoder reranking
+
+L2+ MemOS Cloud (lifecycle sidecar)
+  -> external lifecycle/shared memory service for cross-agent reuse
+
+L3 QMD (memory.backend / BM25)
+  -> retrieves memory files / docs / selected markdown knowledge
+  -> hybrid: BM25 + vector + local GGUF reranking
+
+L4 Cognee sidecar (lifecycle sidecar)
+  -> external recall + knowledge graph, without occupying memory slot
 ```
 
 ## Slot ownership
 
-- `plugins.slots.memory` -> **LanceDB Pro**
-- `plugins.slots.contextEngine` -> **lossless-claw**
-- **Cognee Sidecar** must *not* declare `kind: "memory"`
+- `plugins.slots.memory` → **LanceDB Pro** (L2)
+- `plugins.slots.contextEngine` → **lossless-claw** (L1)
+- **Cognee Sidecar** must *not* declare `kind: "memory"` (L4 — runs as lifecycle sidecar)
 
 ## Core coexistence rule
 
@@ -35,8 +40,8 @@ Therefore:
 
 ## Retrieval flow
 
-- file-like knowledge -> QMD
-- structured per-user/per-agent memory -> LanceDB Pro
-- external synced memory -> Cognee
-- long-chat recall / compaction -> lossless-claw
-- shared lifecycle memory -> MemOS
+- file-like knowledge → QMD (L3)
+- structured per-user/per-agent memory → LanceDB Pro (L2)
+- context compaction → lossless-claw (L1)
+- external synced memory + knowledge graph → Cognee (L4)
+- shared lifecycle memory across agents → MemOS (L2+)
