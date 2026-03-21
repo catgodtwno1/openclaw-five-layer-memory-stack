@@ -8,7 +8,8 @@ A practical, reproducible reference implementation for a five-layer OpenClaw mem
 4. **lossless-claw** — context compaction / DAG memory layer
 5. **MemOS** — shared memory lifecycle layer
 
-> Status: in active validation. This repository is being prepared as a public, sanitized version of a real local deployment.
+> ⚠️ **Layer numbers follow trigger order, not install order. See architecture.md for details.</parameter>
+
 
 ---
 
