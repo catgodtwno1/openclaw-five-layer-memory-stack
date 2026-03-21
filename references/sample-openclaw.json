@@ -1,0 +1,21 @@
+{
+  "memory": {
+    "backend": "qmd",
+    "qmd": {
+      "command": "qmd",
+      "searchMode": "search",
+      "includeDefaultMemory": true,
+      "paths": [
+        { "path": "/path/to/workspace/docs", "pattern": "**/*.md", "name": "docs" },
+        { "path": "/path/to/workspace/skills", "pattern": "**/*.md", "name": "skills" },
+        { "path": "/path/to/workspace", "pattern": "*.md", "name": "rootmd" }
+      ]
+    }
+  },
+  "plugins": {
+    "slots": {
+      "memory": "memory-lancedb-pro",
+      "contextEngine": "lossless-claw"
+    }
+  }
+}
