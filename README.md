@@ -2,15 +2,16 @@
 
 > Status: ✅ Self-test passed. Public repo sanitized.
 
-## Layer Map
+## Layer Map（按触发时机排序）
 
-| 編號 | 元件 | 說明 |
-|------|------|------|
-| L1 | lossless-claw | DAG compaction — context window 滿時觸發 |
-| L2 | LanceDB Pro | 對話記憶自動捕捉 |
-| L2+ | MemOS | 跨會話記憶生命週期管理 |
-| L3 | QMD | 查詢時混合檢索 (BM25 + vector + reranking) |
-| L4 | Cognee Sidecar | 啟動時外部記憶同步注入 |
+| 编号 | 层 | 组件 | 触发时机 | 说明 |
+|------|-----|------------|----------|------|
+| L0 | OpenClaw Markdown | 原生内置 | 永远在 | 记忆源头 + 持久化 |
+| L1 | lossless-claw | contextEngine slot | 上下文满 | 上下文无损压缩（M2.5） |
+| L2 | LanceDB Pro | memory slot | 会话结束 | 语义搜索 + Rerank |
+| L2+ | MemOS Cloud | lifecycle sidecar | 跨会话 | 跨 Agent 记忆同步 |
+| L3 | QMD (BM25) | memory.backend | 查询时 | 精确关键字搜索 |
+| L4 | Cognee sidecar | lifecycle sidecar | 启动时 | 知识图谱 — 关系推理 |
 
 ## Quick Start
 
