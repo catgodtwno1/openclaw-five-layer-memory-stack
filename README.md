@@ -85,3 +85,4 @@ bash scripts/validate-stack.sh
 | [openclaw-five-layer-memory-stack](https://github.com/catgodtwno1/openclaw-five-layer-memory-stack) | 五层记忆栈研究笔记与架构文档 |
 | [openclaw-cognee-rollout](https://github.com/catgodtwno1/openclaw-cognee-rollout) | Cognee 部署指南与 sidecar 共存修复 |
 | [openclaw-memos-server](https://github.com/catgodtwno1/openclaw-memos-server) | MemOS 服务端部署与插件开发 |
+| [openclaw-github-publish-skill](https://github.com/catgodtwno1/openclaw-github-publish-skill) | GitHub 安全发布技能（自动脱敏扫描） |
