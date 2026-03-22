@@ -53,3 +53,17 @@ bash scripts/validate-stack.sh
 - [自测报告 2026-03-21](docs/self-test-report-2026-03-21.md)
 - [自测报告 2026-03-22](docs/self-test-report-2026-03-22.md)
 - [回滚说明](references/rollback-notes.md)
+
+---
+
+## 2026-03-22 最终验收
+
+**测试结果: 60/60 — 100% — 5A+**
+
+本次完成所有层的完整修复与接入：
+- ✅ LanceDB Pro `autoRecall` 开启
+- ✅ Cognee sync 震荡彻底修复（原子写锁 + autoIndex guard）
+- ✅ QMD `memory/` 目录索引
+- ✅ MemOS OpenClaw 插件开发并接入（`memos-openclaw`）
+
+详细报告见 [docs/test-report-2026-03-22-final.md](docs/test-report-2026-03-22-final.md)
