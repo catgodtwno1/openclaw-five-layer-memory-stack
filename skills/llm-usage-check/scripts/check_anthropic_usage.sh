@@ -1,40 +1,82 @@
 #!/usr/bin/env bash
-# check_anthropic_usage.sh — Show Anthropic rate limit info from a live API call
-# For setup-token (Claude Max/Pro), there is no direct quota API.
-# This script fires a minimal API call and reads the response headers.
+# check_anthropic_usage.sh — Query Anthropic rate-limit usage via response headers
+# Works for both setup-token (Claude Max/Pro) and API key accounts.
 # Usage: ANTHROPIC_API_KEY=<key> bash check_anthropic_usage.sh
 #        or: bash check_anthropic_usage.sh <api_key>
+#
+# Auto-reads from ~/.openclaw/agents/main/agent/auth-profiles.json if no key provided.
 
 API_KEY="${1:-${ANTHROPIC_API_KEY}}"
 
+# Auto-detect from OpenClaw auth profile if not set
 if [ -z "$API_KEY" ]; then
-  echo "ERROR: No API key found. Set ANTHROPIC_API_KEY or pass as first argument." >&2
+  PROFILE_FILE="$HOME/.openclaw/agents/main/agent/auth-profiles.json"
+  if [ -f "$PROFILE_FILE" ]; then
+    API_KEY=$(python3 -c "
+import json
+with open('$PROFILE_FILE') as f:
+    d = json.load(f)
+profiles = d.get('profiles', {})
+for k in ['anthropic:default', 'anthropic:manual']:
+    if k in profiles and 'token' in profiles[k]:
+        t = profiles[k]['token']
+        if t.startswith('sk-ant-'):
+            print(t)
+            break
+" 2>/dev/null)
+  fi
+fi
+
+if [ -z "$API_KEY" ]; then
+  echo "ERROR: No Anthropic API key found." >&2
   exit 1
 fi
 
-echo "Probing Anthropic rate-limit headers..."
-echo "(Sending minimal 1-token request to read response headers)"
-echo ""
+TMPFILE=$(mktemp /tmp/anthropic_headers_XXXXXX.txt)
+trap "rm -f $TMPFILE" EXIT
 
-HEADERS=$(curl -s -D - -o /dev/null \
+curl -s -D "$TMPFILE" -o /dev/null \
   "https://api.anthropic.com/v1/messages" \
   -H "x-api-key: ${API_KEY}" \
   -H "anthropic-version: 2023-06-01" \
   -H "content-type: application/json" \
-  -d '{
-    "model": "claude-haiku-4-5",
-    "max_tokens": 1,
-    "messages": [{"role": "user", "content": "hi"}]
-  }')
+  -d '{"model":"claude-haiku-4-5","max_tokens":1,"messages":[{"role":"user","content":"hi"}]}'
 
-echo "Rate Limit Headers:"
-echo "$HEADERS" | grep -i "anthropic-ratelimit" | while read -r line; do
-  echo "  $line"
-done
+python3 << PYEOF
+import re
+from datetime import datetime, timezone
 
-echo ""
-echo "Note: For Claude Max/Pro (setup-token), visit:"
-echo "  https://claude.ai/settings/plan"
-echo "  to see your subscription usage and reset time."
-echo ""
-echo "The /status command in Claude Code also shows the 5h window status."
+with open("$TMPFILE") as f:
+    headers = f.read()
+
+def get_header(name):
+    m = re.search(rf'^{re.escape(name)}:\s*(.+)$', headers, re.MULTILINE | re.IGNORECASE)
+    return m.group(1).strip() if m else None
+
+util_5h  = float(get_header("anthropic-ratelimit-unified-5h-utilization") or 0)
+reset_5h = int(get_header("anthropic-ratelimit-unified-5h-reset") or 0)
+util_7d  = float(get_header("anthropic-ratelimit-unified-7d-utilization") or 0)
+reset_7d = int(get_header("anthropic-ratelimit-unified-7d-reset") or 0)
+status   = get_header("anthropic-ratelimit-unified-status") or "unknown"
+
+def ts_local(ts):
+    if not ts:
+        return "unknown"
+    return datetime.fromtimestamp(ts, tz=timezone.utc).astimezone().strftime("%Y-%m-%d %H:%M %Z")
+
+print("=" * 50)
+print("Anthropic Claude — Usage Summary")
+print("=" * 50)
+print(f"[Current 5h Window]")
+print(f"  Used   : {util_5h*100:.0f}%")
+print(f"  Left   : {(1-util_5h)*100:.0f}%")
+print(f"  Resets : {ts_local(reset_5h)}")
+print()
+print(f"[7-Day Window]")
+print(f"  Used   : {util_7d*100:.0f}%")
+print(f"  Left   : {(1-util_7d)*100:.0f}%")
+print(f"  Resets : {ts_local(reset_7d)}")
+print()
+print(f"Status : {status}")
+print("=" * 50)
+PYEOF

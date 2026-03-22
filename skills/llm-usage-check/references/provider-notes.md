@@ -26,15 +26,21 @@ Authorization: Bearer <coding_plan_key>
 
 ## Anthropic (Claude API Key / setup-token)
 
-**No direct quota REST API.** Options to check usage:
+**Use `check_anthropic_usage.sh`** — fires a minimal 1-token request and parses response headers.
+Auto-reads the key from `~/.openclaw/agents/main/agent/auth-profiles.json` if `ANTHROPIC_API_KEY` is not set.
 
-1. **OpenClaw `/status` command** — shows 5h window remaining (requires setup-token)
-2. **Rate-limit response headers** — returned on every API call:
-   - `anthropic-ratelimit-tokens-remaining`
-   - `anthropic-ratelimit-requests-remaining`
-   - `anthropic-ratelimit-tokens-reset`
-3. **Claude Console** — https://console.anthropic.com/settings/billing (API key accounts)
-4. **claude.ai settings** — https://claude.ai/settings/plan (Max/Pro subscription)
+**Key response headers:**
+| Header | Description |
+|--------|-------------|
+| `anthropic-ratelimit-unified-5h-utilization` | Float 0–1, fraction of 5h window used |
+| `anthropic-ratelimit-unified-5h-reset` | Unix timestamp when 5h window resets |
+| `anthropic-ratelimit-unified-7d-utilization` | Float 0–1, fraction of 7-day window used |
+| `anthropic-ratelimit-unified-7d-reset` | Unix timestamp when 7-day window resets |
+| `anthropic-ratelimit-unified-status` | `allowed` / `throttled` |
+
+**Fallback options:**
+- `/status` command in OpenClaw — shows 5h window
+- https://claude.ai/settings/plan (Max/Pro subscription web UI)
 
 **setup-token vs API key:**
 - `setup-token`: Tied to a Claude Max/Pro subscription; 5h rolling window; no per-token billing
