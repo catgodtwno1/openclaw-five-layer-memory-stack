@@ -1,48 +1,53 @@
-# Cognee Sidecar (L4 — Knowledge Graph)
+# L4: Cognee Sidecar
 
-## Why sidecar exists
+## 当前状态：✅ 已修复并重新启用
 
-Original Cognee integration was implemented as a memory plugin (`kind: "memory"`).
-That causes a hard conflict with LanceDB Pro because both want the exclusive memory slot.
+**2026-03-22 修复上下文溢出问题后重新上线。**
 
-## Sidecar approach
+## 问题根因
 
-The sidecar variant removes `kind: "memory"` and keeps the lifecycle/hooks-based behavior needed for:
+1. `normalizeSearchResults` 没有正确解析 Cognee 嵌套的 `{dataset_id, search_result: [...]}` 格式，把整个对象当一条结果 JSON.stringify
+2. 每个 chunk 8-11k 字符（文件级别），7 个 chunk 注入就是 70k+
+3. 无截断、无去重、无总量限制
 
-- synchronization
-- recall
-- memory injection via `<cognee_memories>` context blocks
+## 修复措施
 
-## Key finding
+1. **`client.js`**：展平嵌套结构，每个 search_result 独立为一条记录
+2. **`plugin.js`**：
+   - 每条 chunk 截断 800 字符
+   - 按源文件去重
+   - 总注入量上限 3000 字符
+   - 清理转义字符，输出纯文本
 
-Generic plugin hooks (`before_agent_start`, `agent_end`, etc.) still work even when the plugin does not own the memory slot.
+## 修复效果（实测）
 
-## Result
+| 指标 | 修复前 | 修复后 |
+|------|--------|--------|
+| 单条 chunk | 8,000-11,000 字符 | ≤800 字符 |
+| 总注入量 | 70k+ 字符 | ≤3,000 字符 |
+| 格式 | 多层转义 JSON | 干净 Markdown |
+| 去重 | 无 | 按源文件去重 |
+| 上下文溢出 | 频繁触发 | 未再出现 |
 
-- LanceDB Pro keeps memory slot ownership
-- Cognee sidecar still provides recall/sync behavior
-- Coexistence is practical
+## 配置
 
-## Current Status (2026-03-22)
+```json
+{
+  "cognee-sidecar-openclaw": {
+    "enabled": true,
+    "config": {
+      "baseUrl": "http://localhost:8000",
+      "datasetName": "openclaw-main-v5",
+      "searchType": "CHUNKS",
+      "maxResults": 2,
+      "maxTokens": 256,
+      "autoRecall": true,
+      "autoIndex": true
+    }
+  }
+}
+```
 
-**⏸ Temporarily disabled** due to context overflow issues.
+## 补丁文件
 
-### Problem
-
-Cognee recall injects `<cognee_memories>` blocks into every message's context. These blocks contain:
-- Full daily notes files (several KB each) chunked and returned as multi-layer escaped JSON
-- Same file returned by multiple chunks → high redundancy
-- Even with `maxResults: 2, maxTokens: 256`, each injection could consume 10-20k tokens
-- Combined with lossless-claw summaries, causes context overflow on smaller-context sessions
-
-### Required fixes before re-enabling
-
-1. **Chunk granularity**: Switch from file-level to paragraph/topic-level chunking
-2. **Return format**: Strip nested JSON escaping, return plain text summaries
-3. **Deduplication**: Prevent same source file from appearing in multiple result chunks
-4. **LCM coordination**: Define clear responsibility boundary between Cognee recall and lossless-claw compressed summaries — avoid overlapping context injection
-
-### Automation scripts
-
-- `scripts/make-cognee-sidecar.sh` — Clone and patch Cognee plugin into sidecar mode
-- `scripts/toggle-cognee-sidecar.py` — Enable/disable sidecar in openclaw.json
+见 [openclaw-cognee-rollout](https://github.com/catgodtwno1/openclaw-cognee-rollout) 仓库的 `patches/` 目录。
