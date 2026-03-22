@@ -30,16 +30,16 @@ bash scripts/make-cognee-sidecar.sh    # L4
 bash scripts/validate-stack.sh
 ```
 
-## 当前状态（2026-03-22）
+## 当前状态（2026-03-22 晚间修正）
 
 | 层 | 状态 | 备注 |
 |----|------|------|
 | L0 Markdown | ✅ 正常 | 读写正常 |
-| L1 lossless-claw | ✅ 正常 | 345+ 摘要, 3862+ 消息 |
+| L1 lossless-claw | ✅ 正常 | 持续压缩与检索正常 |
 | L2 LanceDB Pro | ✅ 正常 | memory_store/recall 正常 |
 | L2+ MemOS | ✅ 已修复 | 根因是 API 格式错误（不是 token 过期） |
-| L3 QMD | ✅ 正常 | BM25 准确率 93% |
-| L4 Cognee sidecar | ⏸ 暂停 | 上下文溢出，待优化 chunk 策略 |
+| L3 QMD | ✅ 正常 | BM25 已可直接使用；主索引位于 `~/.cache/qmd/index.sqlite`，现有 45 files / 4 collections |
+| L4 Cognee sidecar | ✅ 正常 | 运行态已切到 `cognee-fixed:v5`，MiniMax CN 原生 M2.7 HighSpeed + bge-m3 已验证通过 |
 
 ## 文档
 

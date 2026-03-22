@@ -13,8 +13,8 @@
 | L1 | lossless-claw | ✅ Pass | 345+ summaries, 3862+ msgs; lcm_grep/lcm_expand/lcm_describe tools working |
 | L2 | LanceDB Pro | ✅ Pass | memory_store/memory_recall working; hybrid retrieval + rerank active |
 | L2+ | MemOS | ✅ Pass | **Fixed!** Root cause was incorrect API format (used `text` field instead of `messages` array). Write + search now working correctly |
-| L3 | QMD | ✅ Pass | BM25 93% accuracy; 4 collections, 124 chunks |
-| L4 | Cognee sidecar | ⏸ Paused | Temporarily disabled — context overflow from oversized recall injections |
+| L3 | QMD | ✅ Pass | BM25 93% accuracy; 4 collections, 124 chunks; default working index is `~/.cache/qmd/index.sqlite` |
+| L4 | Cognee sidecar | ✅ Pass | Re-enabled after injection cleanup; runtime verified on `cognee-fixed:v5` with MiniMax CN native M2.7 HighSpeed + bge-m3 |
 
 ## Key Fixes This Session
 
@@ -25,11 +25,20 @@
 - **Fix**: Use chat message array: `{"messages": [{"role":"user","content":"..."}], "async_mode": "sync"}`
 - **Verified**: Write creates structured memory with auto-extracted type/tags/confidence; search returns results with relativity scoring
 
-### Cognee Sidecar Disabled
-- **Symptom**: Context overflow errors across sessions
-- **Root cause**: Each `<cognee_memories>` injection contained full daily notes as nested escaped JSON, 10-20k tokens per message
-- **Mitigation**: Disabled sidecar; 4 other layers provide adequate coverage
-- **Long-term fix**: Needs chunk granularity reduction, format cleanup, dedup, and LCM coordination
+### Cognee Sidecar Re-enabled
+- **Original symptom**: Context overflow errors across sessions
+- **Original root cause**: Each `<cognee_memories>` injection contained full daily notes as nested escaped JSON, 10-20k tokens per message
+- **Fixes applied**:
+  - flatten nested Cognee search results
+  - truncate per-result content
+  - deduplicate by source path
+  - cap total injected content
+  - rebuild runtime on `cognee-fixed:v5`
+- **Runtime verification**:
+  - `GET /health` returned healthy
+  - active container image verified as `cognee-fixed:v5`
+  - in-container structured-output call succeeded against MiniMax CN native `MiniMax-M2.7-HighSpeed`
+  - embedding call against `BAAI/bge-m3` succeeded with 1024 dimensions
 
 ## Coexistence Matrix
 

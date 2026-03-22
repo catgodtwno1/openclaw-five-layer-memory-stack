@@ -2,7 +2,7 @@
 
 ## 当前状态：✅ 已修复并重新启用
 
-**2026-03-22 修复上下文溢出问题后重新上线。**
+**2026-03-22 晚间最终状态：运行态已切到 `cognee-fixed:v5`，并验证 MiniMax CN 原生 `MiniMax-M2.7-HighSpeed` + SiliconFlow `bge-m3` 正常工作。**
 
 ## 问题根因
 
@@ -29,7 +29,9 @@
 | 去重 | 无 | 按源文件去重 |
 | 上下文溢出 | 频繁触发 | 未再出现 |
 
-## 配置
+## 运行与配置要点
+
+### Sidecar 插件配置
 
 ```json
 {
@@ -47,6 +49,23 @@
   }
 }
 ```
+
+### Docker 运行态（2026-03-22 晚间）
+
+- image: `cognee-fixed:v5`
+- LLM: `openai/MiniMax-M2.7-HighSpeed`
+- endpoint: `https://api.minimaxi.com/v1`
+- embedding: `openai/BAAI/bge-m3`
+- embedding endpoint: `https://api.siliconflow.cn/v1`
+- `LLM_MAX_COMPLETION_TOKENS=256`
+- `LLM_ARGS={"max_tokens":256,"timeout":30}`
+
+### 实测验证
+
+- `GET /health` → healthy
+- 运行中容器镜像 → `cognee-fixed:v5`
+- 容器内 structured output 调用 → 成功
+- embedding 调用 → 成功返回 1024 维
 
 ## 补丁文件
 
