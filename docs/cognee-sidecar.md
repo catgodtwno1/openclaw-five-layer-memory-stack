@@ -18,6 +18,11 @@
    - 按源文件去重
    - 总注入量上限 3000 字符
    - 清理转义字符，输出纯文本
+   - 注入前二次清洗 `<think>` / reasoning 字段
+3. **`sync.js`**：
+   - `client.add()` / `client.update()` 前先执行 `sanitizeIndexedContent()`
+   - 写入索引前先 strip think block
+   - 额外移除常见 reasoning JSON 行（`reasoning_details` / `reasoning_content` / `thinking` / `chain_of_thought` 等）
 
 ## 修复效果（实测）
 

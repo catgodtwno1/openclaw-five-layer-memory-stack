@@ -1,6 +1,11 @@
 # OpenClaw 五层记忆栈
 
 > 状态：✅ 自测通过。公开仓库已脱敏。
+>
+> **版本说明（2026-03-22 晚间补丁）**
+> - QMD：确认现网主索引位于 `~/.cache/qmd/index.sqlite`，BM25 已可直接使用，无需重建“首次索引”
+> - Cognee：运行态切到 `cognee-fixed:v5`，并补齐 reasoning sanitization（写入前 / 搜索标准化 / 注入前 三层防线）
+> - MemOS：`memos-openclaw` 插件补齐 reasoning sanitize，召回与捕获路径都不再直接带入 `<think>` 内容
 
 ## 层级图（按触发时机排序）
 
@@ -52,6 +57,7 @@ bash scripts/validate-stack.sh
 - [QMD 集成](docs/qmd-integration.md)
 - [自测报告 2026-03-21](docs/self-test-report-2026-03-21.md)
 - [自测报告 2026-03-22](docs/self-test-report-2026-03-22.md)
+- [M2.7 HS reasoning 清洗策略](docs/reasoning-sanitization.md)
 - [回滚说明](references/rollback-notes.md)
 
 ---

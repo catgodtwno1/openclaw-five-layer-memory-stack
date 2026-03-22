@@ -33,6 +33,8 @@
   - truncate per-result content
   - deduplicate by source path
   - cap total injected content
+  - add reasoning sanitize on recall path
+  - add write-side sanitize before `client.add()` / `client.update()`
   - rebuild runtime on `cognee-fixed:v5`
 - **Runtime verification**:
   - `GET /health` returned healthy
