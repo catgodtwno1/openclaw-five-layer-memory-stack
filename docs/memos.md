@@ -108,5 +108,5 @@ curl -X POST http://127.0.0.1:8765/product/search \
 ## LAN Sharing
 
 - Local: `http://127.0.0.1:8765`
-- LAN: `http://10.10.20.178:8765`
+- LAN: `http://<SERVER_IP>:8765`
 - TODO: API auth, LaunchAgent auto-start, OpenClaw plugin wrapper

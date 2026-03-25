@@ -1,7 +1,7 @@
 # Five-Layer Memory Stack — Self-Test Report (2026-03-22)
 
 ## Test Environment
-- Host: Mac Mini M4 (10.10.20.178)
+- Host: Mac Mini M4 (<SERVER_IP>)
 - OpenClaw: 2026.3.13 (61d171a)
 - Model: Claude Opus 4.6
 
